@@ -196,10 +196,10 @@ void Creo::writeWikiaPage(string filename) const
 		<< "\n|-"
 		<< "\n!Size:"
 		<< "\n|" << size << 'm'
-		<< "\n|-"
-		<< "\n!Description:"
-		<< "\n|" << description
 		<< "\n|}"
+		<< "\n"
+		<< "\n<p style=\"text-align:center;\">" << description << "</p>"
+		<< "\n"
 		<< "\n<p style=\"text-align:center;\">*Catch Rate represents how easy the Creo is to catch, 1 being the hardest.</p>"
 		<< "\n"
 		<< "\n<p style=\"text-align:center;\">[[File:Evolution_Title.png|center]]"

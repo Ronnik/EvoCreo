@@ -3,15 +3,9 @@
 
 using std::cout;
 
-ChanceEffect::ChanceEffect(const string& effectName, const float effectChance)
-{
-	name = effectName;
-	chance = effectChance;
-}
 
 
-
-Move::Move(const string& nameArg, const string& descriptionArg, const string& typeArg, const string& elementArg, const string& moveClassArg, const string& contactTypeArg, const string& skillTypeArg, const float accuracyArg, const int damageArg, const int rechargeArg, const vector<ChanceEffect> effectsArg, const vector<ChanceEffect> conditionsArg, const vector<ChanceEffect> boonsArg)
+Move::Move(const string& nameArg, const string& descriptionArg, const string& typeArg, const string& elementArg, const string& moveClassArg, const string& contactTypeArg, const string& skillTypeArg, const float accuracyArg, const int damageArg, const int rechargeArg, const vector<ChanceEffect<Effect>> effectsArg, const vector<ChanceEffect<Condition>> conditionsArg, const vector<ChanceEffect<Boon>> boonsArg)
 {
 	name = nameArg;
 	description = descriptionArg;
@@ -29,4 +23,8 @@ Move::Move(const string& nameArg, const string& descriptionArg, const string& ty
 	effects = effectsArg;
 	conditions = conditionsArg;
 	boons = boonsArg;
+}
+
+void Move::writeWikiaPage(string filename) const
+{
 }

@@ -1,5 +1,5 @@
 // *** Evolution ***
-// Stores id of Creo that the current Creo can evolve into, plus the evolution type and the level or element
+// Contains pointer of Creo that the current Creo can evolve into, plus the evolution type and the level or element
 // Creo uses a vector of these to store all possible evolutions
 
 // *** LearnedSkill ***
@@ -99,8 +99,8 @@ struct Creo
 	Creo(const string& nameArg = "", const string& descriptionArg = "", const string& element1Arg = "", const string& element2Arg = "", const string& creoClassArg = "", const string& rarityArg = "", const string& levelUpSpeedArg = "", const int vitalityArg = 0, const int attackArg = 0, const int specialArg = 0, const int speedArg = 0, const int defenseArg = 0, const int catchRateArg = 0, const int expArg = 0, const int runChanceArg = 0, const float weightArg = 0.0, const float sizeArg = 0.0, const vector<LearnedSkill<Move>>& eliteMovesArg = vector<LearnedSkill<Move>>(), const vector<LearnedSkill<Move>>& normalMovesArg = vector<LearnedSkill<Move>>(), const vector<LearnedSkill<Move>>& healingMovesArg = vector<LearnedSkill<Move>>(), const vector<LearnedSkill<Trait>>& traitsArg = vector<LearnedSkill<Trait>>(), const vector<LearnedSkill<Ability>>& abilitiesArg = vector<LearnedSkill<Ability>>(), const vector<const Move*>& tomeMovesArg = vector<const Move*>(), const vector<Evolution>& evolutionsArg = vector<Evolution>(), const Creo* previousStageArg = NULL);
 		//Constructor creates an empty Creo by default. CreoList fills in data when loading from file.
 
-	void writeCreoPage(string filename = "") const;
-		//writes the wikia page for the Creo and saves it as a .txt file (default name is the creo's name + ".txt")
+	void writeWikiaPage(string filename = "") const;
+		//writes the wikia page for the Creo and saves it as a .txt file (default name is the creo's id number + "_" + name + ".txt")
 		//The resulting text file is wikia source text.
 		//The template is hard-coded, so to change it you must change this function.
 

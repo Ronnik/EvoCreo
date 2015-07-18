@@ -8,6 +8,7 @@ They only give out constant references so that they never have to copy data, and
 #include <vector>
 #include "Creo.h"
 #include "Move.h"
+#include "Effect.h"
 
 using std::string;
 using std::vector;
@@ -21,6 +22,9 @@ class CreoLoader
 	vector<Move*> moveList;
 	vector<Trait*> traitList;
 	vector<Ability*> abilityList;
+	vector<Effect*> effectList;
+	vector<Condition*> conditionList;
+	vector<Boon*> boonList;
 
 	string creoDataFilename,		//"CreoData.xml" contains creo data
 		creoStringsFilename,		//"CreoStrings.xml" contains creo strings
@@ -65,10 +69,19 @@ public:
 		//if no name is given, loads all moves from files
 	void loadTrait(const string& name = "");
 		//loads the trait with the given name
-		//if no name is given, loads all traits from files
+		//if no name is given, loads all traits from file
 	void loadAbility(const string& name = "");
 		//loads the ability with the given name
-		//if no name is given, loads all abilities from files
+		//if no name is given, loads all abilities from file
+	void loadEffect(const string& name);
+		//"loads" the effect with the given name
+		//effects are not stored on file, so just puts the name in an Effect and adds it to the list
+	void loadCondition(const string& name = "");
+		//loads the condition with the given name
+		//if no name is given, loads all conditions from file
+	void loadBoon(const string& name = "");
+		//loads the boon with the given name
+		// if no name is given, loads all conditions from file
 	void loadAll();
 		//loads all items from the files (creo, moves, traits, and abilities)
 
@@ -76,6 +89,9 @@ public:
 	const Move* getMove(const string& name);
 	const Trait* getTrait(const string& name);
 	const Ability* getAbility(const string& name);
+	const Effect* getEffect(const string& name);
+	const Condition* getCondition(const string& name);
+	const Boon* getBoon(const string& name);
 		//Checks the list to see if the requested item is on it. If it is, it returns a constant reference to it.
 		//If it's not on the list, it loads it from the data and strings files, adds it to the list, and returns a constant reference.
 
@@ -83,6 +99,9 @@ public:
 	vector<const Move*> getAllMoves(bool loadAll = true);
 	vector<const Trait*> getAllTraits(bool loadAll = true);
 	vector<const Ability*> getAllAbilities(bool loadAll = true);
+	vector<const Effect*> getAllEffects();		//Only returns "loaded" effects, since effects are not written in the files.
+	vector<const Condition*> getAllConditions(bool loadAll = true);
+	vector<const Boon*> getAllBoons(bool loadAll = true);
 		//returns a vector with all loaded items of the specified type
 		//if 'loadAll' is true, loads all items of that type first
 		//if 'loadAll' is false, only returns already loaded items

@@ -1,20 +1,21 @@
 // *** ChanceEffect ***
-// Basic Struct for storing the ID of an effect/condition/boon and the chance of it occurring when a move hits 
+// Basic Struct for storing an effect/condition/boon and the chance of it occurring when a move hits 
 
 // *** Move ***
 // Struct for storing data for one Move
 // Can load data from data file and strings (description) from strings file
 
 // *** Trait ***
-// Stores name, description, and ID of one Trait
+// Stores name and description of one Trait
 // Can load strings from Strings file
 
 // *** Ability ***
-// Stores name, description, and ID of one Ability
+// Stores name and description of one Ability
 //Can load strings from Strings file
 
 #include <string>
 #include <vector>
+#include "Effect.h"
 
 using std::string;
 using std::vector;
@@ -24,13 +25,15 @@ using std::vector;
 
 
 
+template <typename T>
 struct ChanceEffect
 {
-	string name;
+	const T* info;
 
 	float chance;		//ranges from 0.0 to 1.0
 
-	ChanceEffect(const string& effectName, const float effectChance);	//assigns 'effectName' to 'name' and 'effectChance' to 'chance'
+	ChanceEffect(const T* effect, const float effectChance)
+	{info = effect; chance = effectChance;}
 };
 
 
@@ -50,12 +53,17 @@ struct Move
 	int damage,		//Ranges from 10 to 150, so not exactly the same as Power. There's no Power value, so Power must be derived from this somehow.
 		recharge;			//Recharge time, in turns.
 
-	vector<ChanceEffect> effects,	//I think effects are things like Surge (not conditions or boons but still applied every turn)
-		conditions,					//Conditions, such as Burn and Poison
-		boons;						//Boons, such as Agility and Regen
+	vector<ChanceEffect<Effect>> effects;		//I think effects are things like Surge (not conditions or boons but still applied every turn)
+	vector<ChanceEffect<Condition>> conditions;	//Conditions, such as Burn and Poison
+	vector<ChanceEffect<Boon>> boons;			//Boons, such as Agility and Regen
 
-	Move(const string& nameArg = "", const string& descriptionArg = "", const string& typeArg = "", const string& elementArg = "", const string& moveClassArg = "", const string& contactTypeArg = "", const string& skillTypeArg = "NORMAL", const float accuracyArg = 1.0, const int damageArg = 0, const int rechargeArg = 0, const vector<ChanceEffect> effectsArg = vector<ChanceEffect>(), const vector<ChanceEffect> conditionsArg = vector<ChanceEffect>(), const vector<ChanceEffect> boonsArg = vector<ChanceEffect>());
+	Move(const string& nameArg = "", const string& descriptionArg = "", const string& typeArg = "", const string& elementArg = "", const string& moveClassArg = "", const string& contactTypeArg = "", const string& skillTypeArg = "NORMAL", const float accuracyArg = 1.0, const int damageArg = 0, const int rechargeArg = 0, const vector<ChanceEffect<Effect>> effectsArg = vector<ChanceEffect<Effect>>(), const vector<ChanceEffect<Condition>> conditionsArg = vector<ChanceEffect<Condition>>(), const vector<ChanceEffect<Boon>> boonsArg = vector<ChanceEffect<Boon>>());
 		//Constructor creates an empty Move. MoveList fills in data when loading from file.
+
+	void writeWikiaPage(string filename = "") const;
+		//writes the wikia page for the Move and saves it as a .txt file (default name is the move's name + ".txt")
+		//The resulting text file is wikia source text.
+		//The template is hard-coded, so to change it you must change this function.
 };
 
 
@@ -65,7 +73,7 @@ struct Trait
 	string name,		//trait name
 		description;	//trait description
 
-	Trait(string nameArg = "", string descriptionArg = "")
+	Trait(const string& nameArg = "", const string& descriptionArg = "")
 	{name = nameArg; description = descriptionArg;}
 		//TraitList fills in data when loading from file.
 };
@@ -77,7 +85,7 @@ struct Ability
 	string name,		//ability name
 		description;	//ability description
 
-	Ability(string nameArg = "", string descriptionArg = "")
+	Ability(const string& nameArg = "", const string& descriptionArg = "")
 	{name = nameArg; description = descriptionArg;}
 		//AbilityList fills in data when loading from file.
 };

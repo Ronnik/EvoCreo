@@ -86,7 +86,7 @@ Creo::Creo(const string& nameArg, const string& descriptionArg, const string& el
 		}
 }
 
-void Creo::writeCreoPage(string filename) const
+void Creo::writeWikiaPage(string filename) const
 {
 	ofstream ofs;
 
@@ -149,13 +149,13 @@ void Creo::writeCreoPage(string filename) const
 				ofs << 0;
 			ofs << id
 		<< "\n|-"
-		<< "\n!Skin 1:"
+		<< "\n!Normal Sprite:"
 		<< "\n|[[File:-" << to_string(id) << "_" << firstCaps(name, false) << ".png|left]]"
 		<< "\n|-"
-		<< "\n!Skin 2:"
+		<< "\n!Genetically Modified Sprite:"
 		<< "\n|[[File:-" << to_string(id) << "_" << firstCaps(name, false) << "2.png|left]]"
 		<< "\n|-"
-		<< "\n!Skin 3:"
+		<< "\n!Shiny Sprite:"
 		<< "\n|[[File:-" << to_string(id) << "_" << firstCaps(name, false) << "3.png|left]]"
 		<< "\n|-"
 		<< "\n!Element 1:"
@@ -178,7 +178,7 @@ void Creo::writeCreoPage(string filename) const
 			ofs << stage
 		<< "\n|-"
 		<< "\n!Catch Rate:"
-		<< "\n|" << catchRate << "/250"
+		<< "\n|" << catchRate << "/250*"
 		<< "\n|-"
 		<< "\n!Run Chance:"
 		<< "\n|"; 
@@ -200,7 +200,7 @@ void Creo::writeCreoPage(string filename) const
 		<< "\n!Description:"
 		<< "\n|" << description
 		<< "\n|}"
-		<< "\n<p style=\"text-align:center;\">Catch Rate represents how easy the Creo is to catch, 1 being the hardest.</p>"
+		<< "\n<p style=\"text-align:center;\">*Catch Rate represents how easy the Creo is to catch, 1 being the hardest.</p>"
 		<< "\n"
 		<< "\n<p style=\"text-align:center;\">[[File:Evolution_Title.png|center]]"
 		<< "\n" << getFormattedEvolutionTree() << "</p>"
@@ -324,7 +324,7 @@ string Creo::getFormattedEvolutionTree(stack<string> branches) const
 					}
 					else if((*evoTrav).type == 1)
 					{
-						tree += "\n" + firstCaps((*evoTrav).element, false) + "_arrow.png|" + firstCaps((*evoTrav).element);
+						tree += "\n" + firstCaps((*evoTrav).element, false) + " Element.png|" + firstCaps((*evoTrav).element);
 					}
 				}
 
@@ -349,7 +349,7 @@ string Creo::getFormattedMovesTable(const vector<LearnedSkill<Move>>& movesVecto
 	for(vector<LearnedSkill<Move>>::const_iterator it = movesVector.begin(); it!=movesVector.end(); it++)
 	{
 		tblSource += "\n|-";
-		tblSource += "\n|" + firstCaps((*it).info->name);
+		tblSource += "\n|[[" + firstCaps((*it).info->name) + "]]";
 		tblSource += "\n| style=\"text-align:center;\" |[[File:" + firstCaps((*it).info->name, false) + ".png|center]]";
 		tblSource += "\n| style=\"text-align:center;\" |" + to_string((*it).levelLearned);
 		tblSource += "\n|" + (*it).info->description;
@@ -380,41 +380,41 @@ string Creo::getFormattedTomeMovesTable() const
 
 	string tblSource = "\n{| class=\"article-table\" align=\"center\"";
 		tblSource += "\n!Tome Name";
-		tblSource += "\n!Icon";
 		tblSource += "\n!Move Taught";
+		tblSource += "\n!Icon";
 		tblSource += "\n!Description";
 		tblSource += "\n!Element";
-		tblSource += "\n!";
+		tblSource += "\n!Move Type";
 
 	vector<const Move*>::const_iterator it = tomeMoves.begin();
 
 	for(int i = 0; i < 9; i++, it++)
 	{
 		tblSource += "\n|-";
-		tblSource += "\n|Tome of " + basicTomeNames[i];
+		tblSource += "\n|'''Tome of " + basicTomeNames[i] + "'''";
+		tblSource += "\n|[[" + firstCaps((*it)->name) + "]]";
 		tblSource += "\n|[[File:" + firstCaps((*it)->name, false) + ".png|center]]";
-		tblSource += "\n|" + firstCaps((*it)->name);
 		tblSource += "\n|" + (*it)->description;
 		tblSource += "\n|" + firstCaps((*it)->element);
 		tblSource += "\n|" + firstCaps((*it)->skillType);
 	}
 
 		tblSource += "\n|-";
-		tblSource += "\n|Tome of " + eliteTomeNames[element1Num];
+		tblSource += "\n|'''Tome of " + eliteTomeNames[element1Num] + "'''";
+		tblSource += "\n|[[" + firstCaps((*it)->name) + "]]";
 		tblSource += "\n|[[File:" + firstCaps((*it)->name, false) + ".png|center]]";
-		tblSource += "\n|" + firstCaps((*it)->name);
 		tblSource += "\n|" + (*it)->description;
 		tblSource += "\n|" + firstCaps((*it)->element);
-		tblSource += "\n|" + firstCaps((*it)->skillType);
+		tblSource += "\n|" + firstCaps((*it)->skillType) + " Move";
 
 		if(element1Num != element2Num)
 		{
 			++it;
 
 			tblSource += "\n|-";
-			tblSource += "\n|Tome of " + eliteTomeNames[element2Num];
+			tblSource += "\n|'''Tome of " + eliteTomeNames[element2Num] + "'''";
+			tblSource += "\n|[[" + firstCaps((*it)->name) + "]]";
 			tblSource += "\n|[[File:" + firstCaps((*it)->name, false) + ".png|center]]";
-			tblSource += "\n|" + firstCaps((*it)->name);
 			tblSource += "\n|" + (*it)->description;
 			tblSource += "\n|" + firstCaps((*it)->element);
 			tblSource += "\n|" + firstCaps((*it)->skillType);

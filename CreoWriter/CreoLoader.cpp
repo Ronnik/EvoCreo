@@ -63,6 +63,15 @@ CreoLoader::~CreoLoader()
 
 	for(vector<Ability*>::iterator it = abilityList.begin(); it != abilityList.end(); it++)
 		delete *it;
+
+	for(vector<Effect*>::iterator it = effectList.begin(); it != effectList.end(); it++)
+		delete *it;
+
+	for(vector<Condition*>::iterator it = conditionList.begin(); it != conditionList.end(); it++)
+		delete *it;
+
+	for(vector<Boon*>::iterator it = boonList.begin(); it != boonList.end(); it++)
+		delete *it;
 }
 
 void CreoLoader::loadCreo(const string& name)
@@ -373,26 +382,26 @@ void CreoLoader::loadMove(const string& name)
 
 				if(currentNode->first_attribute("effect"))		//load 'effects' vector
 				{
-					movePtr->effects.push_back(ChanceEffect(currentNode->first_attribute("effect")->value(), atof(currentNode->first_attribute("effectchance")->value())));
+					movePtr->effects.push_back(ChanceEffect<Effect>(getEffect(currentNode->first_attribute("effect")->value()), atof(currentNode->first_attribute("effectchance")->value())));
 
 					if(currentNode->last_attribute("effect") != currentNode->first_attribute("effect"))
-						movePtr->effects.push_back(ChanceEffect(currentNode->last_attribute("effect")->value(), atof(currentNode->last_attribute("effectchance")->value())));
+						movePtr->effects.push_back(ChanceEffect<Effect>(getEffect(currentNode->first_attribute("effect")->value()), atof(currentNode->last_attribute("effectchance")->value())));
 				}
 
 				if(currentNode->first_attribute("condition"))	//load 'conditions' vector
 				{
-					movePtr->conditions.push_back(ChanceEffect(currentNode->first_attribute("condition")->value(), atof(currentNode->first_attribute("conditionchance")->value())));
+					movePtr->conditions.push_back(ChanceEffect<Condition>(getCondition(currentNode->first_attribute("condition")->value()), atof(currentNode->first_attribute("conditionchance")->value())));
 
 					if(currentNode->last_attribute("condition") != currentNode->first_attribute("condition"))
-						movePtr->conditions.push_back(ChanceEffect(currentNode->last_attribute("condition")->value(), atof(currentNode->last_attribute("conditionchance")->value())));
+						movePtr->conditions.push_back(ChanceEffect<Condition>(getCondition(currentNode->first_attribute("condition")->value()), atof(currentNode->last_attribute("conditionchance")->value())));
 				}
 
 				if(currentNode->first_attribute("boon"))		//load 'boons' vector
 				{
-					movePtr->boons.push_back(ChanceEffect(currentNode->first_attribute("boon")->value(), atof(currentNode->first_attribute("boonchance")->value())));
+					movePtr->boons.push_back(ChanceEffect<Boon>(getBoon(currentNode->first_attribute("boon")->value()), atof(currentNode->first_attribute("boonchance")->value())));
 
 					if(currentNode->last_attribute("boon") != currentNode->first_attribute("boon"))
-						movePtr->boons.push_back(ChanceEffect(currentNode->last_attribute("boon")->value(), atof(currentNode->last_attribute("boonchance")->value())));
+						movePtr->boons.push_back(ChanceEffect<Boon>(getBoon(currentNode->last_attribute("boon")->value()), atof(currentNode->last_attribute("boonchance")->value())));
 				}
 
 				if(name != "")
@@ -501,7 +510,7 @@ void CreoLoader::loadTrait(const string& name)
 
 		xml_document<> xmlDoc;
 
-		while(oneline != "")	//There is a blank line between traits and abilities.
+		while(oneline != "	")	//There is a blank line between traits and abilities.
 		{
 			xmlDoc.parse<0>(&oneline[0]);
 
@@ -604,12 +613,149 @@ void CreoLoader::loadAbility(const string& name)
 	}
 }
 
+void CreoLoader::loadEffect(const string& name)
+{
+	preload(effectList, name);		//nothing to load for effects but their names (no descriptions yet)
+}
+
+void CreoLoader::loadCondition(const string& name)
+{
+	try
+	{
+		ifstream ifs(sceneStringsFilename);
+
+		if(!ifs)
+		{
+			ifs.close();
+
+			throw "Conditions file \"" + sceneStringsFilename + "\" failed to open.";
+		}
+
+		string oneline = "";
+		
+		while(oneline != "    <!--         Cond/Boon Strings    -->")
+			getline(ifs, oneline);
+
+		while(oneline != "    ")
+			getline(ifs, oneline);	//move down past the boons to the conditions section
+
+		getline(ifs, oneline);		//doing this before the loop and at end of each iteration so a blank line doesn't get parsed
+
+		bool foundItem = (name == "");
+
+		xml_document<> xmlDoc;
+
+		while(oneline != "    ")		//go through the conditions up to the next blank line (after the end)
+		{
+			xmlDoc.parse<0>(&oneline[0]);
+
+			if((xmlDoc.first_node()->first_attribute()->value() == name) || (name == ""))
+			{
+				foundItem = true;
+
+				Condition* conditionPtr = preload(conditionList, string(xmlDoc.first_node()->first_attribute()->value()));
+
+				conditionPtr->description = xmlDoc.first_node()->value();
+
+				if(name != "")
+					break;
+			}
+
+			getline(ifs, oneline);
+		}
+
+		ifs.close();
+
+		if(!foundItem)
+			cout << "\nError: End of Conditions file \"" + sceneStringsFilename + "\" reached. \"" + name + "\" was not found.";
+	}
+	catch(string loadErr)
+	{
+		cout << "\n" + loadErr + "\n";
+
+		throw;
+	}
+	catch(...)
+	{
+		cout << "\nError encountered while reading Conditions file \"" + sceneStringsFilename + "\": File may be incomplete or improperly formatted.\n";
+
+		throw;
+	}
+}
+
+void CreoLoader::loadBoon(const string& name)
+{
+	try
+	{
+		ifstream ifs(sceneStringsFilename);
+
+		if(!ifs)
+		{
+			ifs.close();
+
+			throw "Boons file \"" + sceneStringsFilename + "\" failed to open.";
+		}
+
+		string oneline = "";
+		
+		while(oneline != "    <!--         Cond/Boon Strings    -->")
+			getline(ifs, oneline);
+
+		getline(ifs, oneline);	//The header comment has another comment line below it.
+
+		getline(ifs, oneline);	//doing this before the loop and at end of each iteration so a blank line doesn't get parsed
+
+		bool foundItem = (name == "");
+
+		xml_document<> xmlDoc;
+
+		while(oneline != "    ")	//There is a blank line between boons and conditions.
+		{
+			xmlDoc.parse<0>(&oneline[0]);
+
+			if((xmlDoc.first_node()->first_attribute()->value() == name) || (name == ""))
+			{
+				foundItem = true;
+
+				Boon* boonPtr = preload(boonList, string(xmlDoc.first_node()->first_attribute()->value()));
+
+				boonPtr->description = xmlDoc.first_node()->value();
+
+				if(name != "")
+					break;
+			}
+
+			getline(ifs, oneline);
+		}
+
+		ifs.close();
+
+		if(!foundItem)
+			cout << "\nError: End of Boons file \"" + sceneStringsFilename + "\" reached. \"" + name + "\" was not found.";
+	}
+	catch(string loadErr)
+	{
+		cout << "\n" + loadErr + "\n";
+
+		throw;
+	}
+	catch(...)
+	{
+		cout << "\nError encountered while reading Boons file \"" + sceneStringsFilename + "\": File may be incomplete or improperly formatted.\n";
+
+		throw;
+	}
+}
+
 void CreoLoader::loadAll()
 {
 	loadCreo();
 	loadMove();
 	loadTrait();
 	loadAbility();
+	//no loadEffect() right now because effects are not stored on file
+	loadCondition();
+	loadBoon();
 }
 
 const Creo* CreoLoader::getCreo(const string& name)
@@ -684,7 +830,7 @@ const Ability* CreoLoader::getAbility(const string& name)
 
 	try
 	{
-		loadAbility(name);			//'name' was not found on the list, so load it.
+		loadAbility(name);		//'name' was not found on the list, so load it.
 	}
 	catch(...)
 	{
@@ -694,6 +840,69 @@ const Ability* CreoLoader::getAbility(const string& name)
 	}
 
 	return get(name, abilityList);
+}
+
+const Effect* CreoLoader::getEffect(const string& name)
+{
+	Effect* effectPtr = get(name, effectList);
+
+	if(effectPtr)
+		return effectPtr;
+
+	try
+	{
+		loadEffect(name);		//'name' was not found on the list, so load it.
+	}
+	catch(...)
+	{
+		cout << "\nError in CreoLoader::getEffect: could not load Effect \"" + name + "\".\n";
+
+		throw;
+	}
+
+	return get(name, effectList);
+}
+
+const Condition* CreoLoader::getCondition(const string& name)
+{
+	Condition* conditionPtr = get(name, conditionList);
+
+	if(conditionPtr)
+		return conditionPtr;
+
+	try
+	{
+		loadCondition(name);	//'name' was not found on the list, so load it.
+	}
+	catch(...)
+	{
+		cout << "\nError in CreoLoader::getCondition: could not load Condition \"" + name + "\".\n";
+
+		throw;
+	}
+
+	return get(name, conditionList);
+}
+
+const Boon* CreoLoader::getBoon(const string& name)
+{
+	Boon* boonPtr = get(name, boonList);
+
+	if(boonPtr)
+		return boonPtr;
+
+	try
+	{
+		loadBoon(name);			//'name' was not found on the list, so load it.
+	}
+	catch(...)
+	{
+		cout << "\nError in CreoLoader::getBoon: could not load Boon \"" + name + "\".\n";
+
+		throw;
+	}
+
+	return get(name, boonList);
 }
 
 vector<const Creo*> CreoLoader::getAllCreo(bool loadAll)
@@ -743,6 +952,42 @@ vector<const Ability*> CreoLoader::getAllAbilities(bool loadAll)
 	vector<const Ability*> constantVector;
 
 	for(vector<Ability*>::iterator it = abilityList.begin(); it != abilityList.end(); it++)
+		constantVector.push_back(*it);
+
+	return constantVector;
+}
+
+vector<const Effect*> CreoLoader::getAllEffects()
+{
+	vector<const Effect*> constantVector;
+
+	for(vector<Effect*>::iterator it = effectList.begin(); it != effectList.end(); it++)
+		constantVector.push_back(*it);
+
+	return constantVector;
+}
+
+vector<const Condition*> CreoLoader::getAllConditions(bool loadAll)
+{
+	if(loadAll)
+		loadCondition();
+
+	vector<const Condition*> constantVector;
+
+	for(vector<Condition*>::iterator it = conditionList.begin(); it != conditionList.end(); it++)
+		constantVector.push_back(*it);
+
+	return constantVector;
+}
+
+vector<const Boon*> CreoLoader::getAllBoons(bool loadAll)
+{
+	if(loadAll)
+		loadBoon();
+
+	vector<const Boon*> constantVector;
+
+	for(vector<Boon*>::iterator it = boonList.begin(); it != boonList.end(); it++)
 		constantVector.push_back(*it);
 
 	return constantVector;

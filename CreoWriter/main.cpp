@@ -12,7 +12,7 @@ int main(int argc, const char *argv[])
 	vector<const Creo*> creoList = creoLoader.getAllCreo();
 
 	for(vector<const Creo*>::const_iterator it = creoList.begin(); it != creoList.end(); it++)
-		(*it)->writeCreoPage();
+		(*it)->writeWikiaPage();
 
 	return 0;
 }

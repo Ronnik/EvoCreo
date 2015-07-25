@@ -4,11 +4,15 @@
 
 // *** LearnedSkill ***
 // Template class for holding a move/trait/ability and the level it is learned
+// Also includes string for tome name for Moves
 // Creo uses vectors of LearnedSkills of types Move, Trait, and Ability
 
 // *** Creo ***
 // Struct for storing data for one Creo
 // Can load data from data file and strings (description) from strings file
+
+#ifndef CREO_H
+#define CREO_H
 
 #include <string>
 #include <vector>
@@ -18,9 +22,6 @@
 using std::string;
 using std::vector;
 using std::stack;
-
-#ifndef CREO_H
-#define CREO_H
 
 
 
@@ -35,8 +36,10 @@ struct LearnedSkill
 
 	int levelLearned;
 
-	LearnedSkill(const T* skill, const int level)
-	{info = skill; levelLearned = level;}
+	string tomeName;
+
+	LearnedSkill(const T* skill, const int level = 0, const string& tome = "")
+	{info = skill; levelLearned = level; tomeName = tome;}
 };
 
 

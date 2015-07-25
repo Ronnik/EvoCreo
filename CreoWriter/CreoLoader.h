@@ -4,6 +4,9 @@ They don't load an item until it's requested, and they store it for the lifetime
 They only give out constant references so that they never have to copy data, and so the data in the list cannot be modified.
 */
 
+#ifndef CREOLOADER_H
+#define CREOLOADER_H
+
 #include <string>
 #include <vector>
 #include "Creo.h"
@@ -13,8 +16,7 @@ They only give out constant references so that they never have to copy data, and
 using std::string;
 using std::vector;
 
-#ifndef CREOLOADER_H
-#define CREOLOADER_H
+
 
 class CreoLoader
 {
@@ -105,6 +107,13 @@ public:
 		//returns a vector with all loaded items of the specified type
 		//if 'loadAll' is true, loads all items of that type first
 		//if 'loadAll' is false, only returns already loaded items
+
+	template <typename T>
+	void sortById(vector<T*>& list);
+		//sorts the list by ID (currently only works on creoList)
+
+	void writeCreoStatsComparison(const string& filename = "CREO_STATS_COMPARISON.txt");
+		//writes the stats comparison page using all creo in the list, formatted as wikia source
 };
 
 #endif

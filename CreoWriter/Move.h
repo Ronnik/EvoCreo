@@ -13,15 +13,15 @@
 // Stores name and description of one Ability
 //Can load strings from Strings file
 
+#ifndef MOVE_H
+#define MOVE_H
+
 #include <string>
 #include <vector>
 #include "Effect.h"
 
 using std::string;
 using std::vector;
-
-#ifndef MOVE_H
-#define MOVE_H
 
 
 
@@ -50,14 +50,16 @@ struct Move
 
 	float accuracy;			//Accuracy, 0.0 - 1.0, shown as 0 - 100 in game
 
-	int damage,		//Ranges from 10 to 150, so not exactly the same as Power. There's no Power value, so Power must be derived from this somehow.
+	int power,				//Called "basedamage" in the data file
 		recharge;			//Recharge time, in turns.
 
-	vector<ChanceEffect<Effect>> effects;		//I think effects are things like Surge (not conditions or boons but still applied every turn)
-	vector<ChanceEffect<Condition>> conditions;	//Conditions, such as Burn and Poison
-	vector<ChanceEffect<Boon>> boons;			//Boons, such as Agility and Regen
+	vector<ChanceEffect<Effect>> effects;			//I think effects are things like Surge (not conditions or boons but still applied every turn)
+	vector<ChanceEffect<Condition>> conditions;		//Conditions, such as Burn and Poison
+	vector<ChanceEffect<Boon>> boons;				//Boons, such as Agility and Regen
 
-	Move(const string& nameArg = "", const string& descriptionArg = "", const string& typeArg = "", const string& elementArg = "", const string& moveClassArg = "", const string& contactTypeArg = "", const string& skillTypeArg = "NORMAL", const float accuracyArg = 1.0, const int damageArg = 0, const int rechargeArg = 0, const vector<ChanceEffect<Effect>> effectsArg = vector<ChanceEffect<Effect>>(), const vector<ChanceEffect<Condition>> conditionsArg = vector<ChanceEffect<Condition>>(), const vector<ChanceEffect<Boon>> boonsArg = vector<ChanceEffect<Boon>>());
+	//vector<LearnedSkill<const Creo*>> creoLearn;	//Creo that can learn this move by levelling up or by tome
+
+	Move(const string& nameArg = "", const string& descriptionArg = "", const string& typeArg = "", const string& elementArg = "", const string& moveClassArg = "", const string& contactTypeArg = "", const string& skillTypeArg = "NORMAL", const float accuracyArg = 1.0, const int powerArg = 0, const int rechargeArg = 0, const vector<ChanceEffect<Effect>> effectsArg = vector<ChanceEffect<Effect>>(), const vector<ChanceEffect<Condition>> conditionsArg = vector<ChanceEffect<Condition>>(), const vector<ChanceEffect<Boon>> boonsArg = vector<ChanceEffect<Boon>>());
 		//Constructor creates an empty Move. MoveList fills in data when loading from file.
 
 	void writeWikiaPage(string filename = "") const;

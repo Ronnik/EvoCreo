@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include "CreoLoader.h"
+#include "TextFormatting.h"
 #include "rapidxml.hpp"
 
 using std::cout;
@@ -10,6 +11,7 @@ using std::cin;
 using std::string;
 using std::vector;
 using std::ifstream;
+using std::ofstream;
 using std::getline;
 using rapidxml::xml_document;
 using rapidxml::xml_node;
@@ -76,9 +78,6 @@ CreoLoader::~CreoLoader()
 
 void CreoLoader::loadCreo(const string& name)
 {
-	if(name != "")
-		cout << "\nLoading \"" + name + "\"...";
-
 	try
 	{
 		ifstream ifs(creoDataFilename);			//loading data first
@@ -108,6 +107,8 @@ void CreoLoader::loadCreo(const string& name)
 		{
 			if((currentNode->first_attribute("id")->value() == name) || (name == ""))
 			{
+				cout << "\nLoading \"" << currentNode->first_attribute("id")->value() << "\"...";
+
 				foundItem = true;
 
 				Creo* creoPtr = preload(creoList, currentNode->first_attribute("id")->value());
@@ -359,6 +360,8 @@ void CreoLoader::loadMove(const string& name)
 		{
 			if((currentNode->first_attribute("id")->value() == name) || (name == ""))
 			{
+				cout << "\nLoading Move \"" << currentNode->first_attribute("id")->value() << "\"...";
+
 				foundItem = true;
 
 				Move* movePtr = preload(moveList, currentNode->first_attribute("id")->value());
@@ -377,8 +380,11 @@ void CreoLoader::loadMove(const string& name)
 				if(currentNode->first_attribute("accuracy"))
 					movePtr->accuracy = atof(currentNode->first_attribute("accuracy")->value());
 
-				movePtr->damage = atoi(currentNode->first_attribute("basedamage")->value());
-				movePtr->recharge = atoi(currentNode->first_attribute("recharge")->value());
+				if(currentNode->first_attribute("basedamage"))
+					movePtr->power = atoi(currentNode->first_attribute("basedamage")->value());
+
+				if(currentNode->first_attribute("recharge"))
+					movePtr->recharge = atoi(currentNode->first_attribute("recharge")->value());
 
 				if(currentNode->first_attribute("effect"))		//load 'effects' vector
 				{
@@ -991,4 +997,94 @@ vector<const Boon*> CreoLoader::getAllBoons(bool loadAll)
 		constantVector.push_back(*it);
 
 	return constantVector;
+}
+
+template <typename T>
+void CreoLoader::sortById(vector<T*>& list)
+{
+	vector<T*>::iterator itemToSwap;
+
+	T* tempHolder = NULL;
+
+	for(vector<T*>::iterator it = list.begin(); it != list.end(); it++)
+	{
+		itemToSwap = it;
+
+		for(vector<T*>::iterator it2 = it; it2 != list.end(); it2++)
+		{
+			if((*itemToSwap)->id > (*it2)->id)
+				itemToSwap = it2;
+		}
+		
+		if(it != itemToSwap)
+		{
+			tempHolder = *it;
+			*it = *itemToSwap;
+			*itemToSwap = tempHolder;
+		}
+	}
+}
+
+void CreoLoader::writeCreoStatsComparison(const string& filename)
+{
+	ofstream ofs;
+
+	cout << "\nWriting Stats Comparison page as \"" + filename + "\"...";
+
+	try
+	{
+		ofs.open(filename);
+	}
+	catch(...)
+	{
+		cout << "\nError: could not create file.\n";
+		throw;
+	}
+
+	sortById(creoList);
+
+	//Start writing the file:
+
+	ofs << "<p style=\"text-align:center;\">"
+		<< "\n</p>"
+		<< "\n"
+		<< "\n<p style=\"text-align:center;\">This chart is correct as of Update 1.1.0 and the information below is the Base Stats for each Creo.</p>"
+		<< "\n"
+		<< "\n"
+		<< "\n{| class=\"article-table sortable\" align=\"center\""
+		<< "\n! style=\"text-align:center;\" |Number"
+		<< "\n! class=\"unsortable\" style=\"text-align:center;\" |Image"
+		<< "\n! style=\"text-align:center;\" |Name"
+		<< "\n! style=\"text-align:center;\" |Vitality"
+		<< "\n! style=\"text-align:center;\" |Physical"
+		<< "\n! style=\"text-align:center;\" |Elemental"
+		<< "\n! style=\"text-align:center;\" |Speed"
+		<< "\n! style=\"text-align:center;\" |Defense";
+		
+	for(vector<Creo*>::const_iterator it = creoList.begin(); it != creoList.end(); it++)
+	{
+	ofs << "\n|-"
+		<< "\n| style=\"text-align:center;\" |#";
+			if((*it)->id < 100)
+			{
+				ofs << 0;
+
+				if((*it)->id < 10)
+					ofs << 0;
+			}
+			ofs << (*it)->id
+		<< "\n| style=\"text-align:center;\" |[[File:-" << (*it)->id << '_' << firstCaps((*it)->name) << ".png|thumb|center]]"
+		<< "\n| style=\"text-align:center;\" |[[" << firstCaps((*it)->name) << "]]"
+		<< "\n| style=\"text-align:center;\" |" << (*it)->vitality
+		<< "\n| style=\"text-align:center;\" |" << (*it)->attack
+		<< "\n| style=\"text-align:center;\" |" << (*it)->special
+		<< "\n| style=\"text-align:center;\" |" << (*it)->speed
+		<< "\n| style=\"text-align:center;\" |" << (*it)->defense;
+	}
+
+	ofs << "\n|}";
+
+	ofs.close();
+
+	cout << "\nDone: " + filename;
 }

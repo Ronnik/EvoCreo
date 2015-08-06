@@ -33,7 +33,7 @@ Evolution::Evolution(const Creo* evolvedCreo, const string& evolutionElement)
 
 
 
-Creo::Creo(const string& nameArg, const string& descriptionArg, const string& element1Arg, const string& element2Arg, const string& creoClassArg, const string& rarityArg, const string& levelUpSpeedArg, const int vitalityArg, const int attackArg, const int specialArg, const int speedArg, const int defenseArg, const int catchRateArg, const int expArg, const int runChanceArg, const float weightArg, const float sizeArg, const vector<LearnedSkill<Move>>& eliteMovesArg, const vector<LearnedSkill<Move>>& normalMovesArg, const vector<LearnedSkill<Move>>& healingMovesArg, const vector<LearnedSkill<Trait>>& traitsArg, const vector<LearnedSkill<Ability>>& abilitiesArg, const vector<const Move*>& tomeMovesArg, const vector<Evolution>& evolutionsArg, const Creo* previousStageArg)
+Creo::Creo(const string& nameArg, const string& descriptionArg, const string& element1Arg, const string& element2Arg, const string& creoClassArg, const string& rarityArg, const string& levelUpSpeedArg, const int vitalityArg, const int attackArg, const int specialArg, const int speedArg, const int defenseArg, const int catchRateArg, const int expArg, const int runChanceArg, const float weightArg, const float sizeArg, const vector<LearnedSkill<Move>>& eliteMovesArg, const vector<LearnedSkill<Move>>& normalMovesArg, const vector<LearnedSkill<Move>>& healingMovesArg, const vector<LearnedSkill<Trait>>& traitsArg, const vector<LearnedSkill<Ability>>& abilitiesArg, const vector<LearnedSkill<Move>>& tomeMovesArg, const vector<Evolution>& evolutionsArg, const Creo* previousStageArg)
 {
 	name = nameArg;
 	description = descriptionArg;
@@ -64,6 +64,12 @@ Creo::Creo(const string& nameArg, const string& descriptionArg, const string& el
 	abilities =	abilitiesArg;
 
 	tomeMoves = tomeMovesArg;
+
+		const string tomeNames[] = {"TOME_OF_NORMALITY", "TOME_OF_FIRE", "TOME_OF_WATER", "TOME_OF_AIR", "TOME_OF_EARTH", "TOME_OF_NATURE", "TOME_OF_ELECTRICITY", "TOME_OF_LIGHT", "TOME_OF_DARKNESS", ""};
+
+		for(int i = 0; i < 10; i++)
+			tomeMoves.push_back(LearnedSkill<Move>(tomeNames[i]));
+		//fills in the 9 basic tome names and puts an empty one in slot 9 for the first elite tome
 
 	evolutions = evolutionsArg;
 
@@ -101,7 +107,7 @@ void Creo::writeWikiaPage(string filename) const
 	}
 	catch(...)
 	{
-		cout << "\nError: could not create output file.\n";
+		cout << "\nError: could not create file.\n";
 		throw;
 	}
 
@@ -308,7 +314,7 @@ string Creo::getFormattedEvolutionTree(stack<string> branches) const
 
 			for(int i = 0; i < branchesSize + 1; i++)
 			{
-				tree += "\n-" + to_string(currentCreo->id) + "_" + firstCaps(currentCreo->name, false) + ".png|" + firstCaps(currentCreo->name) + "|link=" + firstCaps(currentCreo->name, false);
+				tree += "\n-" + to_string(currentCreo->id) + "_" + firstCaps(currentCreo->name, false) + ".png|[[" + firstCaps(currentCreo->name) + "]]|link=" + firstCaps(currentCreo->name, false);
 
 				if(i < branchesSize)
 				{
@@ -363,21 +369,6 @@ string Creo::getFormattedMovesTable(const vector<LearnedSkill<Move>>& movesVecto
 
 string Creo::getFormattedTomeMovesTable() const
 {
-	string basicTomeNames[] = {"Normality", "Fire", "Water", "Air", "Earth", "Nature", "Electricity", "Light", "Darkness"};
-	string eliteTomeNames[] = {"The Ordinary", "Hellfire", "The Tsunami", "Gale", "The Mountain", "The Jungle", "The Storm", "Divinity", "The Void"};
-	string elementNames[] = {"NORMAL", "FIRE", "WATER", "AIR", "EARTH", "NATURE", "ELECTRIC", "LIGHT", "DARK"};
-
-	int element1Num = -1,
-		element2Num = -1;
-
-	for(int i = 0; i < 9; i++)
-	{
-		if(element1 == elementNames[i])
-			element1Num = i;
-		if(element2 == elementNames[i])
-			element2Num = i;
-	}
-
 	string tblSource = "\n{| class=\"article-table\" align=\"center\"";
 		tblSource += "\n!Tome Name";
 		tblSource += "\n!Move Taught";
@@ -386,38 +377,34 @@ string Creo::getFormattedTomeMovesTable() const
 		tblSource += "\n!Element";
 		tblSource += "\n!Move Type";
 
-	vector<const Move*>::const_iterator it = tomeMoves.begin();
+	vector<LearnedSkill<Move>>::const_iterator it = tomeMoves.begin();
 
-	for(int i = 0; i < 9; i++, it++)
+	for(int i = 0; i < 10; i++, it++)
 	{
 		tblSource += "\n|-";
-		tblSource += "\n|'''Tome of " + basicTomeNames[i] + "'''";
-		tblSource += "\n|[[" + firstCaps((*it)->name) + "]]";
-		tblSource += "\n|[[File:" + firstCaps((*it)->name, false) + ".png|center]]";
-		tblSource += "\n|" + (*it)->description;
-		tblSource += "\n|" + firstCaps((*it)->element);
-		tblSource += "\n|" + firstCaps((*it)->skillType);
+		tblSource += "\n| style=\"text-align:center;\"|Tome of ";
+			if((*it).tomeName.substr(8, 4) == "THE_")
+				tblSource += "the " + firstCaps((*it).tomeName.substr(12, (*it).tomeName.length() - 12));
+			else
+				tblSource += firstCaps((*it).tomeName.substr(8, (*it).tomeName.length() - 8));
+		tblSource += "\n|[[" + firstCaps((*it).info->name) + "]]";
+		tblSource += "\n|[[File:" + firstCaps((*it).info->name, false) + ".png|center]]";
+		tblSource += "\n|" + (*it).info->description;
+		tblSource += "\n|" + firstCaps((*it).info->element);
+		tblSource += "\n|" + firstCaps((*it).info->skillType);
 	}
 
-		tblSource += "\n|-";
-		tblSource += "\n|'''Tome of " + eliteTomeNames[element1Num] + "'''";
-		tblSource += "\n|[[" + firstCaps((*it)->name) + "]]";
-		tblSource += "\n|[[File:" + firstCaps((*it)->name, false) + ".png|center]]";
-		tblSource += "\n|" + (*it)->description;
-		tblSource += "\n|" + firstCaps((*it)->element);
-		tblSource += "\n|" + firstCaps((*it)->skillType) + " Move";
-
-		if(element1Num != element2Num)
+		if(element1 != element2)
 		{
 			++it;
 
 			tblSource += "\n|-";
-			tblSource += "\n|'''Tome of " + eliteTomeNames[element2Num] + "'''";
-			tblSource += "\n|[[" + firstCaps((*it)->name) + "]]";
-			tblSource += "\n|[[File:" + firstCaps((*it)->name, false) + ".png|center]]";
-			tblSource += "\n|" + (*it)->description;
-			tblSource += "\n|" + firstCaps((*it)->element);
-			tblSource += "\n|" + firstCaps((*it)->skillType);
+			tblSource += "\n|'''\n|Tome of " + firstCaps((*it).tomeName.substr(8, (*it).tomeName.length() - 8)) + "'''";
+			tblSource += "\n|[[" + firstCaps((*it).info->name) + "]]";
+			tblSource += "\n|[[File:" + firstCaps((*it).info->name, false) + ".png|center]]";
+			tblSource += "\n|" + (*it).info->description;
+			tblSource += "\n|" + firstCaps((*it).info->element);
+			tblSource += "\n|" + firstCaps((*it).info->skillType);
 		}
 
 		tblSource += "\n|}";

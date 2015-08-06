@@ -47,6 +47,10 @@ class CreoLoader
 		//does not load, only returns a pointer to an item already on the list
 		//if item is not on list, returns NULL
 
+	template <typename T>
+	void sortById(vector<T*>& list);
+		//sorts the list by ID (currently only works on creoList)
+
 public:
 	CreoLoader(const string& creoDataFilenameArg = "CreoData.xml", const string& creoStringsFilenameArg = "CreoStrings.xml", const string& moveDataFilenameArg = "MoveData.xml", const string& moveStringsFilenameArg = "MoveStrings.xml", const string& sceneStringsFilenameArg = "SceneStrings.xml");
 		//creates empty lists
@@ -107,10 +111,6 @@ public:
 		//returns a vector with all loaded items of the specified type
 		//if 'loadAll' is true, loads all items of that type first
 		//if 'loadAll' is false, only returns already loaded items
-
-	template <typename T>
-	void sortById(vector<T*>& list);
-		//sorts the list by ID (currently only works on creoList)
 
 	void writeCreoStatsComparison(const string& filename = "CREO_STATS_COMPARISON.txt");
 		//writes the stats comparison page using all creo in the list, formatted as wikia source

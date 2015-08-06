@@ -2,11 +2,6 @@
 // Contains pointer of Creo that the current Creo can evolve into, plus the evolution type and the level or element
 // Creo uses a vector of these to store all possible evolutions
 
-// *** LearnedSkill ***
-// Template class for holding a move/trait/ability and the level it is learned
-// Also includes string for tome name for Moves
-// Creo uses vectors of LearnedSkills of types Move, Trait, and Ability
-
 // *** Creo ***
 // Struct for storing data for one Creo
 // Can load data from data file and strings (description) from strings file
@@ -26,21 +21,6 @@ using std::stack;
 
 
 struct Evolution;
-
-
-
-template <typename T>
-struct LearnedSkill
-{
-	const T* info;
-
-	int levelLearned;
-
-	string tomeName;
-
-	LearnedSkill(const T* skill, const int level = 0, const string& tome = "")
-	{info = skill; levelLearned = level; tomeName = tome;}
-};
 
 
 
@@ -77,7 +57,7 @@ struct Creo
 
 	vector<LearnedSkill<Ability>> abilities;	//ability and level learned - LearnedAbility inherits data from Ability struct
 
-	vector<const Move*> tomeMoves;
+	vector<LearnedSkill<Move>> tomeMoves;
 	/*	TOME MOVES ORDER
 		0	Tome of Normality
 		1	Tome of Fire
@@ -99,7 +79,7 @@ struct Creo
 		// ** Another note: loading a creo will also load all of its evolutions. Side effect: loading a pre-evolution creo after...
 		// ** ...its evolved form will automatically point its 'previousStage' to the pre-evolved creo.
 	
-	Creo(const string& nameArg = "", const string& descriptionArg = "", const string& element1Arg = "", const string& element2Arg = "", const string& creoClassArg = "", const string& rarityArg = "", const string& levelUpSpeedArg = "", const int vitalityArg = 0, const int attackArg = 0, const int specialArg = 0, const int speedArg = 0, const int defenseArg = 0, const int catchRateArg = 0, const int expArg = 0, const int runChanceArg = 0, const float weightArg = 0.0, const float sizeArg = 0.0, const vector<LearnedSkill<Move>>& eliteMovesArg = vector<LearnedSkill<Move>>(), const vector<LearnedSkill<Move>>& normalMovesArg = vector<LearnedSkill<Move>>(), const vector<LearnedSkill<Move>>& healingMovesArg = vector<LearnedSkill<Move>>(), const vector<LearnedSkill<Trait>>& traitsArg = vector<LearnedSkill<Trait>>(), const vector<LearnedSkill<Ability>>& abilitiesArg = vector<LearnedSkill<Ability>>(), const vector<const Move*>& tomeMovesArg = vector<const Move*>(), const vector<Evolution>& evolutionsArg = vector<Evolution>(), const Creo* previousStageArg = NULL);
+	Creo(const string& nameArg = "", const string& descriptionArg = "", const string& element1Arg = "", const string& element2Arg = "", const string& creoClassArg = "", const string& rarityArg = "", const string& levelUpSpeedArg = "", const int vitalityArg = 0, const int attackArg = 0, const int specialArg = 0, const int speedArg = 0, const int defenseArg = 0, const int catchRateArg = 0, const int expArg = 0, const int runChanceArg = 0, const float weightArg = 0.0, const float sizeArg = 0.0, const vector<LearnedSkill<Move>>& eliteMovesArg = vector<LearnedSkill<Move>>(), const vector<LearnedSkill<Move>>& normalMovesArg = vector<LearnedSkill<Move>>(), const vector<LearnedSkill<Move>>& healingMovesArg = vector<LearnedSkill<Move>>(), const vector<LearnedSkill<Trait>>& traitsArg = vector<LearnedSkill<Trait>>(), const vector<LearnedSkill<Ability>>& abilitiesArg = vector<LearnedSkill<Ability>>(), const vector<LearnedSkill<Move>>& tomeMovesArg = vector<LearnedSkill<Move>>(), const vector<Evolution>& evolutionsArg = vector<Evolution>(), const Creo* previousStageArg = NULL);
 		//Constructor creates an empty Creo by default. CreoList fills in data when loading from file.
 
 	void writeWikiaPage(string filename = "") const;

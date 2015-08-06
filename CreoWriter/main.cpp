@@ -1,7 +1,4 @@
-#include <iostream>
 #include "CreoLoader.h"
-
-using std::cout;
 
 
 
@@ -9,7 +6,7 @@ int main(int argc, const char *argv[])
 {
 	const bool writeCreoPages = false;
 	const bool writeStatsComparison = false;
-	const bool writeMovePages = false;
+	const bool writeMovePages = true;
 
 	CreoLoader creoLoader;
 
@@ -31,6 +28,8 @@ int main(int argc, const char *argv[])
 	if(writeMovePages)
 	{
 		vector<const Move*> moveList = creoLoader.getAllMoves();
+
+		creoLoader.loadCreo();
 
 		for(vector<const Move*>::const_iterator it = moveList.begin(); it != moveList.end(); it++)
 			(*it)->writeWikiaPage();

@@ -3,6 +3,9 @@
 #include <vector>
 #include <fstream>
 #include "CreoLoader.h"
+#include "Creo.h"
+#include "Move.h"
+#include "Effect.h"
 #include "TextFormatting.h"
 #include "rapidxml.hpp"
 
@@ -43,6 +46,32 @@ T* CreoLoader::get(const string& name, vector<T*>& list)
 	return NULL;
 }
 
+template <typename T>
+void CreoLoader::sortById(vector<T*>& list)
+{
+	vector<T*>::iterator itemToSwap;
+
+	T* tempHolder = NULL;
+
+	for(vector<T*>::iterator it = list.begin(); it != list.end(); it++)
+	{
+		itemToSwap = it;
+
+		for(vector<T*>::iterator it2 = it; it2 != list.end(); it2++)
+		{
+			if((*itemToSwap)->id > (*it2)->id)
+				itemToSwap = it2;
+		}
+		
+		if(it != itemToSwap)
+		{
+			tempHolder = *it;
+			*it = *itemToSwap;
+			*itemToSwap = tempHolder;
+		}
+	}
+}
+
 CreoLoader::CreoLoader(const string& creoDataFilenameArg, const string& creoStringsFilenameArg, const string& moveDataFilenameArg, const string& moveStringsFilenameArg, const string& sceneStringsFilenameArg)
 {
 	creoDataFilename = creoDataFilenameArg;
@@ -74,6 +103,51 @@ CreoLoader::~CreoLoader()
 
 	for(vector<Boon*>::iterator it = boonList.begin(); it != boonList.end(); it++)
 		delete *it;
+}
+
+void insertSortedLearnedSkillCreo(const LearnedSkill<Creo>& lsCreo, vector<LearnedSkill<Creo>>& lsCreoList)
+{
+	int size = lsCreoList.size();
+
+	if(size == 0)
+	{
+		lsCreoList.push_back(lsCreo);
+
+		return;
+	}
+
+	vector<LearnedSkill<Creo>>::iterator it = lsCreoList.begin() + ((size - 1) / 2);
+
+	while((size > 1) && (lsCreo.info->id != (*it).info->id))
+	{
+		if(lsCreo.info->id > (*it).info->id)
+		{
+			size /= 2;
+
+			it += (size + 1) / 2;
+		}
+		else
+		{
+			size = (size - 1) / 2;
+
+			it -= size / 2 + 1;
+		}
+	}
+
+	if(lsCreo.info->id == (*it).info->id)
+	{
+		if(lsCreo.levelLearned != 0)
+			(*it).levelLearned = lsCreo.levelLearned;
+
+		if(lsCreo.tomeName != "")
+			(*it).tomeName = lsCreo.tomeName;
+	}
+	else if(lsCreo.info->id < (*it).info->id)
+		lsCreoList.insert(it, lsCreo);
+	else
+		lsCreoList.insert(++it, lsCreo);
+
+	return;
 }
 
 void CreoLoader::loadCreo(const string& name)
@@ -177,6 +251,8 @@ void CreoLoader::loadCreo(const string& name)
 				{
 					LearnedSkill<Move> learnedMove(getMove(currentMove->first_attribute("id")->value()), atoi(currentMove->first_attribute("level")->value()));
 
+					insertSortedLearnedSkillCreo(LearnedSkill<Creo>(creoPtr, learnedMove.levelLearned), get(currentMove->first_attribute("id")->value(), moveList)->creoLearn);
+
 					if(learnedMove.info->skillType == "ELITE")
 						creoPtr->eliteMoves.push_back(learnedMove);
 					else if(learnedMove.info->skillType == "NORMAL")
@@ -185,44 +261,39 @@ void CreoLoader::loadCreo(const string& name)
 						creoPtr->healingMoves.push_back(learnedMove);
 				}
 
-				const Move* tomeMoves[11];
-
 				for(xml_node<>* currentTome = currentNode->first_node("movecompatible"); currentTome != NULL; currentTome = currentTome->next_sibling("movecompatible"))
 				{
 					const Move* move = getMove(currentTome->first_attribute("move")->value());
 
 					string tomeName = currentTome->first_attribute("id")->value();
 
-					if(tomeName == "TOME_OF_NORMALITY")
-						tomeMoves[0] = move;
-					else if(tomeName == "TOME_OF_FIRE")
-						tomeMoves[1] = move;
-					else if(tomeName == "TOME_OF_WATER")
-						tomeMoves[2] = move;
-					else if(tomeName == "TOME_OF_AIR")
-						tomeMoves[3] = move;
-					else if(tomeName == "TOME_OF_EARTH")
-						tomeMoves[4] = move;
-					else if(tomeName == "TOME_OF_NATURE")
-						tomeMoves[5] = move;
-					else if(tomeName == "TOME_OF_ELECTRICITY")
-						tomeMoves[6] = move;
-					else if(tomeName == "TOME_OF_LIGHT")
-						tomeMoves[7] = move;
-					else if(tomeName == "TOME_OF_DARKNESS")
-						tomeMoves[8] = move;
-					else if(move->element == creoPtr->element1)
-						tomeMoves[9] = move;
-					else if(move->element == creoPtr->element2)		//"else if", so it can't happen if element1 == element2
-						tomeMoves[10] = move;
+					insertSortedLearnedSkillCreo(LearnedSkill<Creo>(creoPtr, tomeName), get(move->name, moveList)->creoLearn);
+
+					bool moveIsBasic = false;
+
+					for(vector<LearnedSkill<Move>>::iterator it = creoPtr->tomeMoves.begin(); it != creoPtr->tomeMoves.end(); it++)
+					{
+						if(tomeName == (*it).tomeName)
+						{
+							(*it).info = move;
+
+							moveIsBasic = true;
+
+							break;
+						}
+					}
+
+					if(!moveIsBasic)
+					{
+						if(move->element == creoPtr->element1)
+						{
+							creoPtr->tomeMoves[9].tomeName = tomeName;
+							creoPtr->tomeMoves[9].info = move;
+						}
+						else if(move->element == creoPtr->element2)		//"else if", so it can't happen if element1 == element2
+							creoPtr->tomeMoves.push_back(LearnedSkill<Move>(move, tomeName));
+					}
 				}
-
-				creoPtr->tomeMoves = vector<const Move*>();
-				for(int i = 0; i < 10; i++)
-					creoPtr->tomeMoves.push_back(tomeMoves[i]);
-
-				if(creoPtr->element1 != creoPtr->element2)
-					creoPtr->tomeMoves.push_back(tomeMoves[10]);
 
 				creoPtr->traits = vector<LearnedSkill<Trait>>();
 				for(xml_node<>* currentTrait = currentNode->first_node("trait"); currentTrait != NULL; currentTrait = currentTrait->next_sibling("trait"))
@@ -997,32 +1068,6 @@ vector<const Boon*> CreoLoader::getAllBoons(bool loadAll)
 		constantVector.push_back(*it);
 
 	return constantVector;
-}
-
-template <typename T>
-void CreoLoader::sortById(vector<T*>& list)
-{
-	vector<T*>::iterator itemToSwap;
-
-	T* tempHolder = NULL;
-
-	for(vector<T*>::iterator it = list.begin(); it != list.end(); it++)
-	{
-		itemToSwap = it;
-
-		for(vector<T*>::iterator it2 = it; it2 != list.end(); it2++)
-		{
-			if((*itemToSwap)->id > (*it2)->id)
-				itemToSwap = it2;
-		}
-		
-		if(it != itemToSwap)
-		{
-			tempHolder = *it;
-			*it = *itemToSwap;
-			*itemToSwap = tempHolder;
-		}
-	}
 }
 
 void CreoLoader::writeCreoStatsComparison(const string& filename)

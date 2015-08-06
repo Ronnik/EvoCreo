@@ -6,12 +6,12 @@
 // Stores name and description of one Boon
 //Can load strings from SceneStrings.xml
 
+#ifndef EFFECT_H
+#define EFFECT_H
+
 #include <string>
 
 using std::string;
-
-#ifndef EFFECT_H
-#define EFFECT_H
 
 
 
